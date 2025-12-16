@@ -1,124 +1,186 @@
-MLOps Assignment 2: End-to-End Machine Learning Pipeline
-📌 Project Overview
-This project implements a complete MLOps pipeline for predicting housing prices using the California Housing dataset. It automates the data ingestion and model training process using Apache Airflow and serves the trained model via a FastAPI REST interface. The entire system is containerized using Docker for easy deployment and reproducibility.
+# 🚀 MLOps Assignment 2: End-to-End Machine Learning Pipeline
 
-🏗️ Architecture
-The project consists of two main services running in Docker containers:
+## 📌 Project Overview
 
-Airflow Service: Orchestrates the ETL pipeline (Extract, Train, Log).
+This project implements a **complete end-to-end MLOps pipeline** for predicting housing prices using the **California Housing dataset**.
+The system automates **model training, evaluation, and deployment** using industry-standard MLOps tools such as **Apache Airflow, FastAPI, and Docker**.
 
-Task 1: Installs dependencies.
+The trained machine learning model is orchestrated via Airflow and exposed through a **RESTful API** for real-time inference, ensuring **reproducibility, scalability, and modular deployment**.
 
-Task 2: Loads data from Scikit-Learn.
+---
 
-Task 3: Trains a Linear Regression model.
+## 🏗️ System Architecture
 
-Task 4: Logs the MSE score and saves the model.
+The solution consists of **two primary Dockerized services**:
 
-FastAPI Service: Loads the trained model and provides an HTTP endpoint (/predict) for real-time inference.
+### 🔄 Airflow Service (Training Pipeline)
 
-📂 Project Structure
-Bash
+Responsible for orchestrating the ML workflow:
 
+1. **Install Dependencies** – Ensures required Python packages are available.
+2. **Data Loading** – Fetches the California Housing dataset using Scikit-Learn.
+3. **Model Training** – Trains a Linear Regression model.
+4. **Evaluation & Logging** – Calculates Mean Squared Error (MSE) and saves the trained model.
+
+### 🌐 FastAPI Service (Inference Layer)
+
+* Loads the trained `model.pkl`
+* Exposes a `/predict` endpoint for real-time predictions
+* Provides interactive API testing via **Swagger UI**
+
+---
+
+## 📂 Project Structure
+
+```bash
 mlops-assignment-2/
 │
 ├── dags/
-│   └── train_pipeline.py     # Airflow DAG definition (ETL logic)
+│   └── train_pipeline.py     # Airflow DAG (ETL + training logic)
 │
 ├── api/
-│   ├── main.py               # FastAPI application code
-│   └── Dockerfile            # Instructions to build the API container
+│   ├── main.py               # FastAPI application
+│   └── Dockerfile            # API container build instructions
 │
-├── docker-compose.yaml       # Orchestration for Airflow + FastAPI
-├── requirements.txt          # Python dependencies for the API
-├── model.pkl                 # The trained model (generated after pipeline run)
+├── docker-compose.yaml       # Multi-container orchestration
+├── requirements.txt          # API dependencies
+├── model.pkl                 # Trained model (generated post-pipeline)
 └── README.md                 # Project documentation
-⚙️ Prerequisites
-Docker Desktop installed and running.
+```
 
-Git installed.
+---
 
-🚀 Setup & Installation
-1. Clone the Repository
-Bash
+## ⚙️ Prerequisites
 
+Ensure the following are installed on your system:
+
+* **Docker Desktop** (running)
+* **Git**
+* Minimum **8GB RAM** recommended for smooth container execution
+
+---
+
+## 🚀 Setup & Installation
+
+### 1️⃣ Clone the Repository
+
+```bash
 git clone https://github.com/YOUR_USERNAME/mlops-assignment-2.git
 cd mlops-assignment-2
-2. Build and Start Services
-Run the following command to download images and start the containers:
+```
 
-Bash
+### 2️⃣ Build & Start Services
 
+```bash
 docker compose up -d --build
-Note: The first run may take a few minutes to download the Docker images.
+```
 
-💻 Usage Guide
-Part 1: Training the Model (Airflow)
-Open your browser and navigate to http://localhost:8080.
+⏳ *First-time setup may take a few minutes as Docker images are downloaded.*
 
-Login Credentials:
+---
 
-Username: airflow
+## 💻 Usage Guide
 
-Password: airflow
+### 🟢 Part 1: Model Training (Airflow)
 
-Find the DAG named housing_train_pipeline.
+1. Open Airflow UI:
+   👉 [http://localhost:8080](http://localhost:8080)
 
-Unpause the DAG (toggle the switch to Blue) and click the Play (▶) button to trigger a run.
+2. Login credentials:
 
-Wait for all tasks to turn Dark Green (Success).
+   * **Username:** airflow
+   * **Password:** airflow
 
-Check the logs of the log_results_task to see the Mean Squared Error (MSE).
+3. Locate the DAG: **`housing_train_pipeline`**
 
-Part 2: Updating the Model (Critical Step)
-Since the model is trained inside the Airflow container, you must copy it to your project folder so the API can use it. Run this command in your terminal after the pipeline finishes:
+4. Unpause the DAG and click **▶ Trigger DAG**
 
-PowerShell
+5. Wait until all tasks turn **dark green (Success)**
 
+6. Check logs of `log_results_task` to view the **MSE score**
+
+---
+
+### 🔁 Part 2: Update the Model (Critical Step)
+
+Since the model is trained **inside the Airflow container**, it must be copied to the host machine for the API to use.
+
+Run after the pipeline completes:
+
+```powershell
 docker cp mlops-assignment-2-airflow-worker-1:/tmp/model.pkl ./model.pkl
-Then, restart the API to load the new model:
+```
 
-PowerShell
+Restart the API service:
 
+```powershell
 docker compose restart fastapi-app
-Part 3: Making Predictions (FastAPI)
-Navigate to the Swagger UI: http://localhost:8000/docs.
+```
 
-Click on the POST /predict endpoint.
+---
 
-Click Try it out.
+### 🔮 Part 3: Making Predictions (FastAPI)
 
-The request body will auto-fill with default values from the California Housing dataset.
+1. Open Swagger UI:
+   👉 [http://localhost:8000/docs](http://localhost:8000/docs)
 
-Click Execute.
+2. Select **POST /predict**
 
-Scroll down to see the predicted price in the response body!
+3. Click **Try it out → Execute**
 
-JSON
+4. View the prediction response:
 
+```json
 {
   "prediction": 4.526
 }
-🛠️ Troubleshooting
-1. "Empty Response" or Localhost Refused
+```
 
-Ensure Docker Desktop is running.
+---
 
-Wait 30-60 seconds after docker compose up for the webserver to fully initialize.
+## 🛠️ Troubleshooting
 
-2. Model Copy Error (Could not find file)
+### ❌ Localhost Refused / Empty Response
 
-The pipeline might not have finished successfully. Check the Airflow UI graph to ensure the train_model task is green.
+* Ensure Docker Desktop is running
+* Wait **30–60 seconds** after startup for services to initialize
 
-The temporary file inside the container is deleted if the container restarts. Run the pipeline again immediately before copying.
+### ❌ Model Copy Error
 
-3. API returns "Internal Server Error"
+* Ensure the Airflow pipeline completed successfully
+* Copy the model immediately after training finishes
+* Re-run the DAG if needed
 
-The model.pkl file might be empty (0kb). Verify the file size on your local machine. If it is 0kb, repeat the copy step.
+### ❌ API Internal Server Error
 
-📝 Learning Outcomes
-Orchestration: learned how to define dependency graphs in Python using Airflow.
+* Verify `model.pkl` is not empty (file size > 0 KB)
+* Re-copy the model and restart the API
 
-Containerization: Gained experience writing Dockerfiles and using Docker Compose to manage multi-container applications.
+---
 
-Model Serving: Implemented a real-time inference API ensuring strict schema validation with Pydantic.
+## 📝 Learning Outcomes
+
+* **Orchestration:** Designed dependency-driven pipelines using Apache Airflow
+* **Containerization:** Built and managed multi-service systems with Docker & Docker Compose
+* **Model Serving:** Implemented a production-ready inference API with FastAPI
+* **MLOps Best Practices:** Separation of training & serving environments, reproducibility, and automation
+
+---
+
+## 📌 Technologies Used
+
+* Python
+* Scikit-Learn
+* Apache Airflow
+* FastAPI
+* Docker & Docker Compose
+* Pydantic
+* REST APIs
+
+---
+
+## 👨‍💻 Author
+
+**Muhammad Hassan Tahir**
+MLOps / Machine Learning Engineer
+---
